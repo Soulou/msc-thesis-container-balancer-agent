@@ -23,6 +23,9 @@ class Task:
     def create(clazz, port):
         c = Task._docker_client()
         # All parameters are not necessary, but it's nice to now which can be changed.
+        if port == None:
+            port = 3000
+
         container = c.create_container(Task.service_image, command=None, hostname=None, user=None,
                 detach=False, stdin_open=False, tty=False, mem_limit=Task.default_memory,
                 ports=[port], environment=[("PORT=%d" % port)], dns=None, volumes=None,
@@ -30,11 +33,11 @@ class Task:
                 entrypoint=None, cpu_shares=None, working_dir=None,
                 memswap_limit=0)
 
-        c.start(container, binds=None, port_bindings={port:port}, lxc_conf=None,
+        c.start(container, binds=None, port_bindings={port: None}, lxc_conf=None,
                 publish_all_ports=False, links=None, privileged=False,
                 dns=None, dns_search=None, volumes_from=None, network_mode=None)
 
-        return container
+        return c.inspect_container(container)
         
 
     @classmethod
@@ -58,8 +61,8 @@ class Task:
         containers = c.containers(quiet=False, all=False, trunc=True, latest=False, since=None,
              before=None, limit=-1)
         for container in containers:
-            if container['Image'] == _Task.service_image:
-                service_containers += Task(container)
+            if container['Image'] == ("%s:latest" % Task.service_image):
+                service_containers.append(Task(container))
 
         return service_containers
 
