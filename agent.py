@@ -5,32 +5,42 @@ from flask import json
 from flask import request
 from flask import Response
 
-from  task import Task
+from container import Container
+from container import ContainerJSONEncoder
 import traceback
 
 app = Flask(__name__)
 app.debug = True
 
-@app.route("/tasks", methods=['GET'])
-def get_tasks():
-    tasks = Task.all()
-    return json.dumps(map((lambda task: task.info), tasks))
+@app.route("/containers", methods=['GET'])
+def get_containers():
+    containers = Container.all()
+    return json.dumps(map((lambda container: container.info), containers))
 
-@app.route("/tasks", methods=['POST'])
-def new_task():
+@app.route("/containers", methods=['POST'])
+def new_container():
+    try:
+        service = request.form['service']
+    except KeyError:
+        return Response("service field should be providen", status=422)
+
     try:
         port = int(request.form['port'])
+        return json.dumps(Container.create(service=service, port=port))
     except KeyError:
-        port = None
-    return json.dumps(Task.create(port=port))
+        return json.dumps(Container.create(service=service), cls=ContainerJSONEncoder)
 
-@app.route("/task/<task_id>", methods=['PATCH'])
-def update_task(task_id):
+@app.route("/container/<container_id>", methods=['GET'])
+def get_container(container_id):
+    return Response(json.dumps(Container.find(container_id), cls=ContainerJSONEncoder), status=200)
+
+@app.route("/container/<container_id>", methods=['PATCH'])
+def update_container(container_id):
     pass
 
-@app.route("/task/<task_id>", methods=['DELETE'])
-def delete_task(task_id):
-    Task.find(task_id).delete()
+@app.route("/container/<container_id>", methods=['DELETE'])
+def delete_container(container_id):
+    Container.find(container_id).delete()
     resp = Response(None, status=204)
     return resp
 
