@@ -1,13 +1,13 @@
 #!/usr/bin/env python2
 
 from flask import Flask
-from flask import json
 from flask import request
 from flask import Response
 
 from container import Container
 from container import ContainerJSONEncoder
-import traceback
+
+import json
 
 app = Flask(__name__)
 app.debug = True
