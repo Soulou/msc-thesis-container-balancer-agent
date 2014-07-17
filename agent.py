@@ -4,6 +4,9 @@ from flask import Flask
 from flask import request
 from flask import Response
 
+from threading import Thread
+import sysinfo
+
 from container import Container
 from container import ContainerJSONEncoder
 
@@ -44,5 +47,20 @@ def delete_container(container_id):
     resp = Response(None, status=204)
     return resp
 
+@app.route("/status", methods=["GET"])
+def node_status():
+    status = {
+        "cpus": sysinfo.cpus_usage(),
+        "free_memory": sysinfo.free_memory(),
+        "memory": sysinfo.memory(),
+        "net": sysinfo.net_interfaces_usage(),
+        "nb_containers": Container.count()
+    }
+    return json.dumps(status)
+
 if __name__ == "__main__":
+    thread_cpu_monitoring = Thread(target = sysinfo.monitor_cpus, args = ())
+    thread_cpu_monitoring.start()
+    thread_netdev_monitoring = Thread(target = sysinfo.monitor_netdev, args = ())
+    thread_netdev_monitoring.start()
     app.run(host='0.0.0.0')

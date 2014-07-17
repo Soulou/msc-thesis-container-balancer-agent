@@ -33,6 +33,13 @@ class Container:
         return json.dumps(self.info)
 
     @classmethod
+    def count(clazz):
+        c = Container._docker_client()
+        containers = c.containers(quiet=True, all=False, trunc=True, latest=False, since=None,
+             before=None, limit=-1)
+        return len(containers)
+
+    @classmethod
     def create(clazz, service, port=3000):
         c = Container._docker_client()
 
