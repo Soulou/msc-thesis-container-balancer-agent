@@ -11,9 +11,11 @@ def monitor_netdev():
     while True:
         netstat_lines = open("/proc/net/dev").read().split("\n")
         for line in netstat_lines:
-            m = re.match("^[a-z0-9]+:(\s+\d+)+$", line)
-            if m:
+            if re.match("^\s*[a-z0-9]+:(\s+\d+)+$", line):
                 split_line = re.split("\s+", line)
+                if split_line[0]  == "":
+                        split_line.pop(0)
+
                 netdev_name = split_line[0][0:-1]
 
                 _net_interfaces_usage[netdev_name] = {"rx": 0, "tx": 0}
