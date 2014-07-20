@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 
+import os
+
 from flask import Flask
 from flask import request
 from flask import Response
@@ -7,6 +9,8 @@ from flask import Response
 from threading import Thread
 import sysinfo
 
+from container import monitor_containers
+from container import container_usage
 from container import Container
 from container import ContainerJSONEncoder
 
@@ -37,6 +41,10 @@ def new_container():
 def get_container(container_id):
     return Response(json.dumps(Container.find(container_id), cls=ContainerJSONEncoder), status=200)
 
+@app.route("/container/<container_id>/status", methods=['GET'])
+def get_container_status(container_id):
+    return json.dumps(container_usage(container_id))
+
 @app.route("/container/<container_id>", methods=['PATCH'])
 def update_container(container_id):
     pass
@@ -63,4 +71,6 @@ if __name__ == "__main__":
     thread_cpu_monitoring.start()
     thread_netdev_monitoring = Thread(target = sysinfo.monitor_netdev, args = ())
     thread_netdev_monitoring.start()
-    app.run(host='0.0.0.0')
+    thread_container_monitoring = Thread(target = monitor_containers, args = ())
+    thread_container_monitoring.start()
+    app.run(host='0.0.0.0', use_reloader=False)

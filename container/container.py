@@ -3,12 +3,6 @@ import docker
 import random
 import json
 
-class ServiceNotFound(Exception):
-    pass
-
-class ContainerNotFound(Exception):
-    pass
-
 class ContainerJSONEncoder(json.JSONEncoder):
     def default(self, o):
         return o.to_json()

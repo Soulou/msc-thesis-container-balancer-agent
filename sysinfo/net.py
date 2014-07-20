@@ -35,4 +35,3 @@ def monitor_netdev():
                 _net_interfaces_usage_raw[netdev_name]["rx"] = current_netdev_rx_usage
                 _net_interfaces_usage_raw[netdev_name]["tx"] = current_netdev_tx_usage
         sleep(1)
-

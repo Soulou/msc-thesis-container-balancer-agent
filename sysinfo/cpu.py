@@ -22,4 +22,3 @@ def monitor_cpus():
                     pass
                 _cpus_usage_raw[cpu_name]  = current_cpu_usage
         sleep(1)
-
