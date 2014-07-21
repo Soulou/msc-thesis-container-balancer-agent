@@ -23,9 +23,6 @@ class Container:
         c.kill(self.info["Id"])
         c.remove_container(self.info["Id"])
 
-    def to_JSON(self):
-        return json.dumps(self.info)
-
     @classmethod
     def count(clazz):
         c = Container._docker_client()
