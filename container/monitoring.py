@@ -13,7 +13,7 @@ def container_usage(cid):
             }
     raise ContainerNotFound
 
-systemd = os.path.isdir("/usr/lib/systemd")
+systemd = os.path.isdir("/usr/bin/systemctl")
 
 def _get_cgroup_dir(name):
     if systemd:
