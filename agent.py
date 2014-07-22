@@ -30,12 +30,15 @@ def new_container():
         service = request.form['service']
     except KeyError:
         return Response("service field should be providen", status=422)
-
+    try:
+        image = request.form['image']
+    except KeyError:
+        return Response("image field should be providen", status=422)
     try:
         port = int(request.form['port'])
-        return json.dumps(Container.create(service=service, port=port))
+        return json.dumps(Container.create(service=service, port=port, image=image))
     except KeyError:
-        return json.dumps(Container.create(service=service), cls=ContainerJSONEncoder)
+        return json.dumps(Container.create(service=service, image=image), cls=ContainerJSONEncoder)
 
 @app.route("/container/<container_id>", methods=['GET'])
 def get_container(container_id):
@@ -43,7 +46,11 @@ def get_container(container_id):
 
 @app.route("/container/<container_id>/status", methods=['GET'])
 def get_container_status(container_id):
-    return json.dumps(container_usage(container_id))
+    try:
+        usage = container_usage(container_id)
+    except:
+        return Response(json.dumps({"error": "not found"}), status=404)
+    return json.dumps(usage)
 
 @app.route("/container/<container_id>", methods=['PATCH'])
 def update_container(container_id):

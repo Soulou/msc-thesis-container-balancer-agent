@@ -3,6 +3,8 @@ import re
 import os
 import os.path
 
+from .errors import ContainerNotFound
+
 def container_usage(cid):
     for container_full_id in _container_cpu_percent.keys():
         if container_full_id.startswith(cid):
@@ -13,7 +15,7 @@ def container_usage(cid):
             }
     raise ContainerNotFound
 
-systemd = os.path.isdir("/usr/bin/systemctl")
+systemd = os.path.isfile("/usr/bin/systemctl")
 
 def _get_cgroup_dir(name):
     if systemd:
@@ -39,6 +41,11 @@ _container_net_bytes = {}
 
 def monitor_containers():
     while True:
+        # Wait for docker cgroup dir to be available
+        if not os.path.isdir(_cpuacct_base_dir):
+            sleep(1)
+            continue
+
         cgroups = os.listdir(_cpuacct_base_dir)
         for cgroup in cgroups:
             if re.match(id_regexp, cgroup):

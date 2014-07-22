@@ -8,8 +8,6 @@ class ContainerJSONEncoder(json.JSONEncoder):
         return o.to_json()
 
 class Container:
-    service_image = "soulou/msc-thesis-fibo-http-service"
-    service_image_id = None
     default_memory = 512 * 1024 * 1024 # 512MB
 
     def __init__(self, container_data):
@@ -31,7 +29,7 @@ class Container:
         return len(containers)
 
     @classmethod
-    def create(clazz, service, port=3000):
+    def create(clazz, service, port=3000, image=None):
         c = Container._docker_client()
 
         service_containers = Container.all(service=service)
@@ -51,7 +49,7 @@ class Container:
                 break
 
         # All parameters are not necessary, but it's nice to now which can be changed.
-        container = c.create_container(Container.service_image, command=None, hostname=None, user=None,
+        container = c.create_container(image, command=None, hostname=None, user=None,
                 detach=False, stdin_open=False, tty=False, mem_limit=Container.default_memory,
                 ports=[port], environment=[("PORT={}".format(port))], dns=None, volumes=None,
                 volumes_from=None, network_disabled=False, name="{}-{}".format(service, service_index),
@@ -72,8 +70,6 @@ class Container:
             container = c.inspect_container(cid)
         except:
             raise ContainerNotFound
-        if container['Image'] != Container.service_image_id:
-            raise ContainerNotFound
 
         return Container(container)
 
@@ -86,23 +82,12 @@ class Container:
         containers = c.containers(quiet=False, all=False, trunc=True, latest=False, since=None,
              before=None, limit=-1)
         for container in containers:
-            if container['Image'] == ("%s:latest" % Container.service_image):
-                if service != None:
-                    if not container['Names'][0][1:].startswith(service):
-                        continue
-                service_containers.append(Container(container))
+            if service != None:
+                if not container['Names'][0][1:].startswith(service):
+                    continue
+            service_containers.append(Container(container))
 
         return service_containers
-
-    @classmethod
-    def _init_service_image_id(clazz):
-        c = Container._docker_client()
-
-        images = c.images(name=Container.service_image, quiet=False, all=False, viz=False)
-        if len(images) < 1:
-            raise ServiceNotFound()
-
-        Container.service_image_id = images[0]["Id"]
 
     @classmethod
     def _docker_client(clazz):
@@ -116,7 +101,3 @@ class Container:
                   version='1.12',
                   timeout=10)
         return c
-
-if Container.service_image_id == None:
-    Container._init_service_image_id()
-
