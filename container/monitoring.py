@@ -48,29 +48,29 @@ def monitor_containers():
 
         cgroups = os.listdir(_cpuacct_base_dir)
         for cgroup in cgroups:
-            if re.match(id_regexp, cgroup):
-                if systemd:
-                    cid = cgroup.split("-")[1].split(".")[0]
-                else:
-                    cid = cgroup
+            try:
+                if re.match(id_regexp, cgroup):
+                    if systemd:
+                        cid = cgroup.split("-")[1].split(".")[0]
+                    else:
+                        cid = cgroup
 
-                try:
-                    _container_cpuacct_prev[cid] = _container_cpuacct[cid]
-                    _container_net_prev[cid] = _container_net[cid]
-                except:
-                    # new container, first metrics
-                    _create_netns_link(cgroup, cid)
+                    try:
+                        _container_cpuacct_prev[cid] = _container_cpuacct[cid]
+                        _container_net_prev[cid] = _container_net[cid]
+                    except:
+                        # new container, first metrics
+                        _create_netns_link(cgroup, cid)
 
-                _container_net[cid] = container_network(cid)
-                _container_cpuacct[cid] = int(open(_cpuacct_base_dir + "/" + cgroup + "/cpuacct.usage").read())
-                try:
+                    _container_net[cid] = container_network(cid)
+                    _container_cpuacct[cid] = int(open(_cpuacct_base_dir + "/" + cgroup + "/cpuacct.usage").read())
                     _container_cpu_percent[cid] = (_container_cpuacct[cid] - _container_cpuacct_prev[cid]) / 10 / 1024 / 1024
                     _container_net_bytes[cid] = {
                         "rx": _container_net[cid]["rx"] - _container_net_prev[cid]["rx"],
                         "tx": _container_net[cid]["tx"] - _container_net_prev[cid]["tx"]
                     }
-                except:
-                    pass
+            except:
+                pass
         sleep(1)
 
 def _create_netns_link(cgroup, cid):
