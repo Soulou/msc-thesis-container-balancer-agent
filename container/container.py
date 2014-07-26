@@ -8,7 +8,6 @@ class ContainerJSONEncoder(json.JSONEncoder):
         return o.to_json()
 
 class Container:
-    default_memory = 512 * 1024 * 1024 # 512MB
 
     def __init__(self, container_data):
         self.info = container_data
@@ -50,7 +49,7 @@ class Container:
 
         # All parameters are not necessary, but it's nice to now which can be changed.
         container = c.create_container(image, command=None, hostname=None, user=None,
-                detach=False, stdin_open=False, tty=False, mem_limit=Container.default_memory,
+                detach=False, stdin_open=False, tty=False, mem_limit=0,
                 ports=[port], environment=[("PORT={}".format(port))], dns=None, volumes=None,
                 volumes_from=None, network_disabled=False, name="{}-{}".format(service, service_index),
                 entrypoint=None, cpu_shares=None, working_dir=None,
