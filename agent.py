@@ -22,7 +22,7 @@ app.debug = True
 @app.route("/containers", methods=['GET'])
 def get_containers():
     containers = Container.all()
-    return json.dumps(map((lambda container: container.info), containers))
+    return json.dumps(list(map((lambda container: container.info), containers)))
 
 @app.route("/containers", methods=['POST'])
 def new_container():
