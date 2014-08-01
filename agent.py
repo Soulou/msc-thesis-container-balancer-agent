@@ -19,9 +19,13 @@ import json
 app = Flask(__name__)
 app.debug = True
 
+
 @app.route("/containers", methods=['GET'])
 def get_containers():
     containers = Container.all()
+    service = request.args.get("service")
+    if service != None:
+        containers = Container.filter_by_service(containers, service)
     return json.dumps(list(map((lambda container: container.info), containers)))
 
 @app.route("/containers", methods=['POST'])
@@ -34,6 +38,7 @@ def new_container():
         image = request.form['image']
     except KeyError:
         return Response("image field should be providen", status=422)
+
     try:
         port = int(request.form['port'])
         return json.dumps(Container.create(service=service, port=port, image=image))

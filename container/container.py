@@ -15,6 +15,12 @@ class Container:
     def to_json(self):
         return self.info
 
+    def service(self):
+        try:
+            return self.info['Name'].split("-")[0][1:]
+        except KeyError:
+            return self.info['Names'][0].split("-")[0][1:]
+
     def delete(self):
         c = Container._docker_client()
         c.kill(self.info["Id"])
@@ -100,3 +106,11 @@ class Container:
                   version='1.12',
                   timeout=10)
         return c
+
+    @classmethod
+    def filter_by_service(clazz, containers, service):
+        new_containers = []
+        for c in containers:
+            if c.service() == service:
+                new_containers.append(c)
+        return new_containers
